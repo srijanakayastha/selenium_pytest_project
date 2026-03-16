@@ -1,117 +1,74 @@
-**Selenium Test Automation Framework (Python + PyTest)**
+Selenium Test Automation Framework (Python + PyTest)
+This repository contains an automated test suite built with Python, Selenium WebDriver, and PyTest.
+The project automates the testing of an e-commerce web application and verifies different user workflows such as authentication, product browsing, checkout, and product rating.
 
-This repository contains an automated testing framework developed using Python, Selenium WebDriver, and PyTest. The framework is designed to test an e-commerce web application by automating different user interactions such as authentication, browsing products, completing purchases, and submitting product ratings.
-
-The project was developed as part of my learning experience in the Software Engineering Program at Masterschool. During the program, I initially created manual test cases and later automated selected scenarios using Selenium.
+This project was created as part of my learning journey during the Software Engineering Program at Masterschool, where I first designed manual test cases and later automated selected scenarios.
 
 Technologies Used
-
 Python
-
 Selenium WebDriver
-
 PyTest
-
 Page Object Model (POM)
-
 HTML Test Reports
-
 Test Design
+Most test files contain functional tests for individual page components, ensuring that page actions behave correctly.
 
-The automated tests include both functional tests and end-to-end user scenarios.
-
-Functional tests focus on verifying individual components of each page and ensuring that page interactions behave as expected.
-
-Additionally, three complete user scenarios were automated based on manual test cases that were previously created in my QA portfolio:
+Three end-to-end scenarios were implemented based on manual test design created earlier in my QA portfolio:
 
 Product Rating System
-
 Age Verification System
-
 Shipping Cost Changes
-
-These scenarios simulate real user behavior across multiple pages of the application.
+These scenarios simulate real user workflows across multiple pages.
 
 Test Scenarios Covered
+The automated tests cover several user workflows:
+
 Authentication
 
 User login
-
 Invalid login attempts
-
 User registration
+Shop functionality
 
-Shop Features
+Product browsing
+Pagination
+Product details page
+Age verification
 
-Browsing available products
+Users must confirm age before accessing restricted products
+Checkout process
 
-Navigating product pages with pagination
-
-Viewing product details
-
-Age Verification
-
-Users must confirm their age before accessing restricted products
-
-Checkout Process
-
-Adding items to the shopping cart
-
+Adding products to cart
 Entering shipping information
+Completing a purchase
+Product rating system
 
-Completing the purchase
+Users can rate products they purchased
+Users cannot rate products they did not buy
+Users cannot rate the same product multiple times
+Shipping logic
 
-Product Rating System
-
-Users can rate products they have purchased
-
-Users cannot rate products they have not bought
-
-Users cannot rate the same product more than once
-
-Shipping Logic
-
-Shipping costs change depending on certain conditions
-
+Shipping cost updates depending on conditions
 Test Automation Approach
+The project uses the Page Object Model (POM) design pattern to improve maintainability and readability of tests.
 
-This project follows the Page Object Model (POM) design pattern to make the test code more organized, readable, and maintainable.
+Key ideas used in this project:
 
-Important principles used in the framework:
-
-Clear separation between test cases and page logic
-
-Reusable methods inside page objects
-
-Configuration management using config.py
-
-Separation of test data from test logic
-
-Use of explicit waits to manage dynamic web elements
-
+Separation of tests and page logic
+Reusable page methods
+Configuration management via config.py
+Test data separation
+Explicit waits to handle dynamic elements
 Running the Tests
-Install Dependencies
+Install dependencies
 pip install -r requirements.txt
-Run All Tests
-pytest -v
-Generate an HTML Test Report
+
+Run all tests
+Example command to execute the test suite: pytest pytest -v
+
+Run tests with HTML report
 pytest --html=reports/report.html
+
 Screenshots and Reports
+The project includes: HTML test reports generated after test execution Screenshots captured during test failures These help analyze test results and debug issues.
 
-The framework generates useful artifacts during test execution:
-
-HTML test reports summarizing the test results
-
-Screenshots captured on test failures
-
-These artifacts help with debugging and analyzing test outcomes.
-
-Project Structure
-project-root
-│
-├── tests/           # Automated test cases
-├── pages/           # Page Object Model classes
-├── reports/         # Generated reports and screenshots
-├── config.py        # Configuration settings
-├── requirements.txt # Project dependencies
-└── README.md
