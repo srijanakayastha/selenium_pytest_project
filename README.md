@@ -1,4 +1,4 @@
-Selenium Test Automation Framework (Python + PyTest)
+**Selenium Test Automation Framework (Python + PyTest)**
 
 This repository contains an automated testing framework developed using Python, Selenium WebDriver, and PyTest. The framework is designed to test an e-commerce web application by automating different user interactions such as authentication, browsing products, completing purchases, and submitting product ratings.
 
