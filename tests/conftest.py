@@ -1,24 +1,64 @@
+import os
 import pytest
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 @pytest.fixture(scope="function")
 def driver():
-    """
-        PyTest fixture to set up and tear down the Selenium WebDriver.
-    """
-    # Instantiate the web driver for Chrome
+    """PyTest fixture to set up and tear down the Selenium WebDriver."""
+
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--guest") # To workaround Google Password Manager pop-up
 
-    # Start driver (Selenium 4 style)
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.maximize_window()
-    driver.delete_all_cookies()
-    driver.implicitly_wait(3)  # Implicit wait to handle timing issues
+    # Avoid Google Password Manager pop-up
+    chrome_options.add_argument("--guest")
 
-    # Yield the driver instance for use in tests
-    yield driver
+    # Zoom out to ensure all UI elements are visible
+    chrome_options.add_argument("--force-device-scale-factor=0.8")
 
-    # Teardown: Quit the WebDriver
-    driver.quit()
+    # Start browser maximized
+    chrome_options.add_argument("--start-maximized")
+
+    # Optional: run headless in CI
+    if os.getenv("HEADLESS") == "1":
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--window-size=1920,1080")
+
+    driver = None
+
+    try:
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+
+        # Basic stability improvement
+        driver.implicitly_wait(5)
+
+        driver.delete_all_cookies()
+
+        yield driver
+
+    finally:
+        if driver:
+            driver.quit()
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Hook to capture screenshots on test failure."""
+    outcome = yield
+    report = outcome.get_result()
+
+    # Capture screenshots on setup or test failure
+    if report.when in ("setup", "call") and report.failed:
+        driver = item.funcargs.get("driver")
+
+        if driver:
+            screenshots_dir = "screenshots"
+            os.makedirs(screenshots_dir, exist_ok=True)
+
+            # Unique filename (handles parametrized tests)
+            file_name = f"{item.nodeid.replace('::', '_').replace('/', '_')}.png"
+            file_path = os.path.join(screenshots_dir, file_name)
+
+            driver.save_screenshot(file_path)

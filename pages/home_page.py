@@ -1,6 +1,10 @@
+
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 from utils.config import Config
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 
 
 class HomePage(BasePage):
@@ -38,3 +42,16 @@ class HomePage(BasePage):
 
     def open_contact_page(self):
         self.click(self.CONTACT_PAGE)
+
+# --- Utility Methods ---
+    def is_visible(self, locator, timeout=5):
+        """
+        Returns True if the element is visible, False otherwise.
+        """
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.visibility_of_element_located(locator)
+            )
+            return True
+        except TimeoutException:
+            return False

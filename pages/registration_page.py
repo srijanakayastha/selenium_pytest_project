@@ -22,6 +22,7 @@ class RegistrationPage(BasePage):
         return self.open(Config.AUTH_URL)
 
     def switch_to_registration(self):
+        self.scroll_into_view(self.SWITCH_TO_REGISTRATION_LINK)
         self.click(self.SWITCH_TO_REGISTRATION_LINK)
 
     def enter_name(self, name):
@@ -37,6 +38,7 @@ class RegistrationPage(BasePage):
         return self
 
     def submit(self):
+        self.scroll_into_view(self.SIGNUP_BUTTON)
         self.click(self.SIGNUP_BUTTON)
 
     def get_confirmation_message(self):
