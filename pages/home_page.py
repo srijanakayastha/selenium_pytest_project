@@ -15,8 +15,7 @@ class HomePage(BasePage):
     FAVORITES_ICON = (By.XPATH, "//div[@class = 'headerIcon'][2]")
     CART_ICON = (By.XPATH, "//div[@class = 'headerIcon'][3]")
     SHOP_PAGE = (By.XPATH, "//*[@id='root']//ul/li[2]/a")
-    FAVORITES_PAGE = (By.XPATH, "//*[@id='root']//ul/li[3]/a")
-    CONTACT_PAGE = (By.XPATH, "//*[@id='root']//ul/li[4]/a")
+
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -43,15 +42,3 @@ class HomePage(BasePage):
     def open_contact_page(self):
         self.click(self.CONTACT_PAGE)
 
-# --- Utility Methods ---
-    def is_visible(self, locator, timeout=5):
-        """
-        Returns True if the element is visible, False otherwise.
-        """
-        try:
-            WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_element_located(locator)
-            )
-            return True
-        except TimeoutException:
-            return False

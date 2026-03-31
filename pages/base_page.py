@@ -46,7 +46,7 @@ class BasePage:
     def find_all(self, locator):
         """ Return all matching elements."""
         self.wait.until(
-            EC.presence_of_element_located(locator)
+            EC.presence_of_all_elements_located(locator)
         )
         return self.driver.find_elements(*locator)
 

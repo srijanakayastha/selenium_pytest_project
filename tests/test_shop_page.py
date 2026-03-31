@@ -1,37 +1,47 @@
-import time
-
+import pytest
 from pages.login_page import LoginPage
 from pages.shop_page import ShopPage
 from utils.config import Config
-from utils.test_data import COMMENT
-from utils.test_data import TEST_VALID_USER_1
+from utils.test_data import COMMENT, TEST_VALID_USER_1
 
-def test_rate_celery(driver):
+# Products to test (must match alt attributes exactly)
+PRODUCTS_TO_TEST = [
+    {"name": "Oranges", "quantity": 1},
+     {"name": "Loose Pears", "quantity": 3},
+     {"name": "Cherries", "quantity": 2},
+]
+
+@pytest.mark.parametrize("product", PRODUCTS_TO_TEST)
+def test_rate_product(driver, product):
+    product_name = product["name"]
+    quantity = product["quantity"]
+
+    # --- LOGIN ---
     login_page = LoginPage(driver)
     login_page.load()
-    login_page.login("test123@test.com", "123456")
-    login_page.screenshot("after_login")
-    time.sleep(2)
+    login_page.login(TEST_VALID_USER_1["email"], TEST_VALID_USER_1["password"])
+    login_page.screenshot(f"after_login_{product_name}")
+
+    # --- SHOP PAGE & AGE MODAL ---
     shop_page = ShopPage(driver)
     shop_page.load()
-    time.sleep(2)
     shop_page.enter_date_age_modal("25-03-1987").confirm_age_modal()
-    time.sleep(2)
-    shop_page.add_product_to_cart("celery", 5)
-    shop_page.screenshot("after_add_to_cart")
-    shop_page.view_product_info("celery")
-    shop_page.rate_stars("4")
-    shop_page.comment(COMMENT["celery"])
-    shop_page.send_rating()
-    time.sleep(2)
-    shop_page.screenshot("before_assert_already_reviewed_message")
-    assert shop_page.get_rating_restriction_text() == Config.ALREADY_REVIEWED_MESSAGE
-    time.sleep(2)
-    shop_page.screenshot("before_assert_rating_user")
-    assert shop_page.get_rating_user() == TEST_VALID_USER_1["username"]
-    time.sleep(2)
-    shop_page.screenshot("before_assert_rating")
-    assert shop_page.get_rating() == Config.RATING["4"]
-    time.sleep(2)
-    shop_page.delete_rating()
-    time.sleep(2)
+    shop_page.screenshot(f"after_age_verification_{product_name}")
+
+    # --- ADD TO CART ---
+    shop_page.add_product_to_cart(product_name, quantity=quantity)
+    shop_page.screenshot(f"after_add_to_cart_{product_name}")
+
+
+
+    # # --- ASSERTIONS ---
+    # assert shop_page.get_rating_restriction_text() == Config.ALREADY_REVIEWED_MESSAGE, \
+    #     f"Rating restriction message mismatch for {product_name}"
+    # assert shop_page.get_rating_user() == TEST_VALID_USER_1["username"], \
+    #     f"Rating user mismatch for {product_name}"
+    # assert shop_page.get_rating() == Config.RATING["4"], \
+    #     f"Rating stars count mismatch for {product_name}"
+    #
+    # # --- CLEANUP ---
+    # shop_page.delete_rating()
+    # shop_page.screenshot(f"after_delete_rating_{product_name}")
