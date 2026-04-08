@@ -40,7 +40,7 @@ class BasePage:
     def find(self, locator):
         """ Wait and return a single element."""
         return self.wait.until(
-            EC.presence_of_element_located(locator)
+            EC.visibility_of_element_located(locator)
         )
   # Returns multiple elements.
     def find_all(self, locator):
@@ -96,10 +96,8 @@ class BasePage:
     def screenshot(self, name="screenshot"):
         self.driver.save_screenshot(f"{name}.png")
 
-
-
-    # Wait for alert popup
-   #  Accept it
+        # Wait for alert popup
+        #  Accept it
 
     def wait_and_accept_alert(self, timeout=10):
         alert = WebDriverWait(self.driver, timeout).until(EC.alert_is_present())

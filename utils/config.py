@@ -9,7 +9,9 @@ class Config:
     ALL_CATEGORY = 1  # All, by default
     ITEM_QUANTITY = 5
     AGE_20 = datetime.datetime.today().replace(year=datetime.datetime.today().year - 20).strftime("%d-%m-%Y")
-    AGE_CONFIRMATION_MESSAGE = "You are of age. You can now view all products, even alcohol products."
+    AGE_VERIFICATION_SUCCESS_ALERT = "You are of age. You can now view all products, even alcohol products."
+    AGE_VERIFICATION_FAIL_ALERT = "You are underage. You can still browse the site, but you will not be able to view alcohol products."
+    UNDERAGE_NOTICE_TEXT = "You are underage and cannot view alcohol products. Please wait until you are 18 or older to access these products."
     LOGIN_ERROR_MESSAGE = "Invalid username or password"
     ITEM_ADDED_MESSAGE = "Item added to cart!"
     ALREADY_REVIEWED_MESSAGE = "You have already reviewed this product."

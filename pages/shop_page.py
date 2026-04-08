@@ -1,7 +1,7 @@
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from pages.base_page import BasePage
 from utils.config import Config
 from selenium.webdriver.common.by import By
@@ -16,12 +16,24 @@ class ShopPage(BasePage):
     AGE_VERIFICATION_INPUT = (By.XPATH, "//div[@class='modal-content']/input[@type='text']")
     AGE_VERIFICATION_CONFIRM_BUTTON = (By.XPATH, "//div[@class='modal-content']//button[text()='Confirm']")
     AGE_VERIFICATION_TEXT = (By.XPATH, "//div[@class='modal-content']//p")
+    AGE_VERIFICATION_SUCCESS_ALERT = (
+        By.XPATH,
+        f"//div[@role='status' and contains(text(), '{Config.AGE_VERIFICATION_SUCCESS_ALERT}')]"
+    )
+    AGE_VERIFICATION_FAIL_ALERT = (
+        By.XPATH,
+        f"//div[@role='status' and contains(text(), '{Config.AGE_VERIFICATION_FAIL_ALERT}')]"
+    )
+    ALCOHOL_CATEGORY_XPATH =(By.XPATH, "//a[text()='Alocohol']")
+    NO_ALCOHOLIC_PRODUCTS = (By.XPATH,"//div[@class='no-products-card']")
 
     # --- PAGINATION ---
     NEXT_PAGE_BUTTON = (By.XPATH, "//button[contains(text(), 'Next')]")
 
     # --- MESSAGES ---
     CONFIRMATION_MSG = (By.XPATH, "//div[@role='status']")
+
+    SHOP_XPATH = (By.XPATH,"//ul[@class='anim-nav']//a[@href='/store']")
 
 
 
@@ -32,7 +44,8 @@ class ShopPage(BasePage):
     # ----------------- PAGE NAVIGATION -----------------
     def load(self):
         """Open the shop page URL"""
-        return self.open(Config.SHOP_PAGE_URL)
+        self.click(self.SHOP_XPATH)
+        return self
 
     # ----------------- AGE MODAL -----------------
     def enter_date_age_modal(self, date):
@@ -42,9 +55,10 @@ class ShopPage(BasePage):
     def confirm_age_modal(self):
         self.click(self.AGE_VERIFICATION_CONFIRM_BUTTON)
         # Wait for modal to disappear
-        WebDriverWait(self.driver, 5).until(
-            EC.invisibility_of_element_located(self.AGE_VERIFICATION_INPUT)
-        )
+        # WebDriverWait(self.driver, 5).until(
+        #     EC.invisibility_of_element_located(self.AGE_VERIFICATION_INPUT)
+        # )
+        return self
 
     # ----------------- PRODUCT LOCATORS -----------------
     def get_all_products_on_page(self):
@@ -73,32 +87,18 @@ class ShopPage(BasePage):
 
     def add_product_to_cart(self, product_name, quantity=1):
         wait = WebDriverWait(self.driver, 10)
+        product_add_to_cart_xpath = self.get_add_to_cart_xpath_for_product(product_name)
+        add_to_cart_btn = self.find(product_add_to_cart_xpath)
 
-        # REWRITE THIS LINE EXACTLY:
-        # It must have one [ for contains and one [ for descendant.
-        card_xpath = f"//div[contains(@class,'product-card')]   "
 
-        # Wait for the card
-        product_card = wait.until(EC.presence_of_element_located((By.XPATH, card_xpath)))
-
-        # Handle Quantity
+        #Handle_quantity
         if int(quantity) > 1:
-            # Use partial name match for the dynamic ID 'quantity_...'
-            qty_input = product_card.find_element(By.XPATH, ".//input[contains(@name, 'quantity')]")
-            qty_input.clear()
-            qty_input.send_keys(str(quantity))
+            product_quantity_xpath = self.get_quantity_xpath_for_product(product_name)
+            quantity_input = self.find(product_quantity_xpath)
+            quantity_input.clear()
+            quantity_input.send_keys(str(quantity))
 
-            # 3. Wait for the button INSIDE the card to be clickable, then click
-            # This is the most reliable way to ensure the click actually registers
-            button_xpath = ".//button[contains(@class, 'btn-cart')]"
-
-            # We find the element first, then wait for it to be clickable
-            add_button = product_card.find_element(By.XPATH, button_xpath)
-            wait.until(EC.element_to_be_clickable(add_button))
-
-           # 4. Optional: Small sleep to let the AJAX request finish
-            import time
-            time.sleep(1)
+        add_to_cart_btn.click()
 
 
 
@@ -123,3 +123,49 @@ class ShopPage(BasePage):
     # ----------------- UTILITY -----------------
     def scroll_into_view(self, element):
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+
+
+    def get_add_to_cart_xpath_for_product(self,product):
+        return (By.XPATH, f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//button[contains(text(),'Add to Cart')]")
+
+    def get_quantity_xpath_for_product(self,product):
+        return (By.XPATH,f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//input[@type='number and @class=quantity']")
+
+    def get_age_verification_message(self, message_type):
+        xpath_map = {
+            "success": self.AGE_VERIFICATION_SUCCESS_ALERT,
+            "failure": self.AGE_VERIFICATION_FAIL_ALERT,
+        }
+
+        message_type = message_type.lower()
+
+        if message_type not in xpath_map:
+            raise ValueError(f"Invalid message_type: {message_type}")
+
+        try:
+            message = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located(xpath_map[message_type])
+            )
+            return message.text.strip()
+
+        except (TimeoutException, NoSuchElementException):
+            return None
+
+    def are_alcoholic_products_not_viewable(self):
+        self.find(self.ALCOHOL_CATEGORY_XPATH).click()
+        try:
+            self.find(self.NO_ALCOHOLIC_PRODUCTS)
+            return True
+        except (NoSuchElementException, TimeoutException):
+            return False
+
+        def get_error_message(self):
+            # Wait until the alert is visible, then return text
+            element = self.driver.find_element(*self.AGE_VERIFICATION_FAIL_ALERT)
+            return element.text
+
+
+
+
+
+
