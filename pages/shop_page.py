@@ -124,4 +124,15 @@ class ShopPage(BasePage):
         product_image.click()
 
     def are_alcoholic_products_not_viewable(self):
-        pass
+        """
+        Returns True if alcoholic products are NOT viewable (blocked),
+        i.e., the "no products" card is visible.
+        Returns False if alcoholic products are visible.
+        """
+        try:
+            # If the "no-products-card" element is displayed, then products are blocked
+            element = self.find(self.NO_ALCOHOLIC_PRODUCTS)
+            return element.is_displayed()
+        except:
+            # If element is not found, products are visible
+            return False
