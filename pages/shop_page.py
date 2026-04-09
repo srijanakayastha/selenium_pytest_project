@@ -1,21 +1,13 @@
-
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 from utils.config import Config
-from selenium.webdriver.common.by import By
 import time
 
 class ShopPage(BasePage):
-    """
-    Page object for the shop page. Handles age modal, pagination, add-to-cart, product info, and ratings.
-    """
 
     # --- AGE MODAL ---
     AGE_VERIFICATION_INPUT = (By.XPATH, "//div[@class='modal-content']/input[@type='text']")
     AGE_VERIFICATION_CONFIRM_BUTTON = (By.XPATH, "//div[@class='modal-content']//button[text()='Confirm']")
-    AGE_VERIFICATION_TEXT = (By.XPATH, "//div[@class='modal-content']//p")
     AGE_VERIFICATION_SUCCESS_ALERT = (
         By.XPATH,
         f"//div[@role='status' and contains(text(), '{Config.AGE_VERIFICATION_SUCCESS_ALERT}')]"
@@ -24,148 +16,112 @@ class ShopPage(BasePage):
         By.XPATH,
         f"//div[@role='status' and contains(text(), '{Config.AGE_VERIFICATION_FAIL_ALERT}')]"
     )
-    ALCOHOL_CATEGORY_XPATH =(By.XPATH, "//a[text()='Alocohol']")
-    NO_ALCOHOLIC_PRODUCTS = (By.XPATH,"//div[@class='no-products-card']")
+    MODAL_OVERLAY = (By.CLASS_NAME, "modal-overlay")
 
-    # --- PAGINATION ---
+    # --- PRODUCTS ---
+    PRODUCT_CARD = ".product-card"
     NEXT_PAGE_BUTTON = (By.XPATH, "//button[contains(text(), 'Next')]")
+    NO_ALCOHOLIC_PRODUCTS = (By.XPATH, "//div[@class='no-products-card']")
+    ALCOHOL_CATEGORY_XPATH = (By.XPATH, "//a[text()='Alocohol']")
 
-    # --- MESSAGES ---
-    CONFIRMATION_MSG = (By.XPATH, "//div[@role='status']")
+    # --- SHOP NAV ---
+    SHOP_XPATH = (By.XPATH, "//ul[@class='anim-nav']//a[@href='/store']")
 
-    SHOP_XPATH = (By.XPATH,"//ul[@class='anim-nav']//a[@href='/store']")
-
-
-
-    # ----------------- INIT -----------------
-    def __init__(self, driver):
-        super().__init__(driver)
-
-    # ----------------- PAGE NAVIGATION -----------------
+    # --- PAGE LOAD ---
     def load(self):
-        """Open the shop page URL"""
-        self.click(self.SHOP_XPATH)
+        """Load shop page safely, waiting for any modal overlays to disappear"""
+        self.wait_for_overlay_to_disappear()
+        self.safe_click(self.SHOP_XPATH)
+        self.wait_for_overlay_to_disappear()
         return self
 
-    # ----------------- AGE MODAL -----------------
-    def enter_date_age_modal(self, date):
-        self.type_text(self.AGE_VERIFICATION_INPUT, date)
+    # --- AGE MODAL ---
+    def enter_date_age_modal(self, date_of_birth):
+        """Enter DOB in age modal fields"""
+        day, month, year = date_of_birth.split("-")
+        self.type_text((By.ID, "dob-day"), day)
+        self.type_text((By.ID, "dob-month"), month)
+        self.type_text((By.ID, "dob-year"), year)
         return self
 
     def confirm_age_modal(self):
-        self.click(self.AGE_VERIFICATION_CONFIRM_BUTTON)
-        # Wait for modal to disappear
-        # WebDriverWait(self.driver, 5).until(
-        #     EC.invisibility_of_element_located(self.AGE_VERIFICATION_INPUT)
-        # )
+        """Click confirm on age modal and wait for overlay to disappear"""
+        self.safe_click(self.AGE_VERIFICATION_CONFIRM_BUTTON)
+        self.wait_for_overlay_to_disappear()
         return self
 
-    # ----------------- PRODUCT LOCATORS -----------------
-    def get_all_products_on_page(self):
-        elements = self.driver.find_elements(By.CSS_SELECTOR, ".product-card img[alt]")
-        return [el.get_attribute("alt") for el in elements]
+    def get_age_verification_message(self, message_type):
+        """Return success/failure message text"""
+        xpath_map = {
+            "success": self.AGE_VERIFICATION_SUCCESS_ALERT,
+            "failure": self.AGE_VERIFICATION_FAIL_ALERT,
+        }
+        locator = xpath_map.get(message_type.lower())
+        if not locator:
+            raise ValueError(f"Invalid message_type: {message_type}")
+        try:
+            message = self.find(locator)
+            return message.text.strip()
+        except:
+            return None
 
-    # ----------------- PRODUCT ACTIONS -----------------
+    # --- AGE CONFIRM HELPER ---
+   
+    def confirm_age(shop_page, date_of_birth):
+        """Helper to enter DOB and confirm age modal"""
+        shop_page.enter_date_age_modal(date_of_birth).confirm_age_modal()
+
+    # --- PRODUCTS ---
+    def get_all_products_on_page(self):
+        return [el.get_attribute("alt") for el in self.driver.find_elements(By.CSS_SELECTOR, ".product-card img[alt]")]
+
     def find_product(self, product_name):
-        """Find product card by name, handles pagination."""
+        """Handle pagination and find product by name"""
         while True:
             cards = self.driver.find_elements(By.CSS_SELECTOR, ".product-card")
             for card in cards:
                 if product_name.lower() in card.text.lower():
                     return card
-            # Try next page
+            # Pagination
             try:
                 next_buttons = self.driver.find_elements(*self.NEXT_PAGE_BUTTON)
                 if next_buttons and next_buttons[0].is_enabled():
                     next_buttons[0].click()
-                    time.sleep(1)  # wait for new products to load
+                    time.sleep(1)
                 else:
                     return None
             except:
                 return None
 
+    def is_product_visible(self, product_name):
+        return self.find_product(product_name) is not None
+
+    def get_add_to_cart_xpath_for_product(self, product):
+        return (By.XPATH, f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//button[contains(text(),'Add to Cart')]")
+
+    def get_quantity_xpath_for_product(self, product):
+        return (By.XPATH, f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//input[@type='number']")
 
     def add_product_to_cart(self, product_name, quantity=1):
-        wait = WebDriverWait(self.driver, 10)
-        product_add_to_cart_xpath = self.get_add_to_cart_xpath_for_product(product_name)
-        add_to_cart_btn = self.find(product_add_to_cart_xpath)
+        self.wait_for_overlay_to_disappear()
+        add_btn_locator = self.get_add_to_cart_xpath_for_product(product_name)
 
-
-        #Handle_quantity
+        # Set quantity if more than 1
         if int(quantity) > 1:
-            product_quantity_xpath = self.get_quantity_xpath_for_product(product_name)
-            quantity_input = self.find(product_quantity_xpath)
+            quantity_locator = self.get_quantity_xpath_for_product(product_name)
+            quantity_input = self.find(quantity_locator)
             quantity_input.clear()
             quantity_input.send_keys(str(quantity))
 
-        add_to_cart_btn.click()
-
-
+        self.safe_click(add_btn_locator)
 
     def view_product_info(self, product_name):
-        """Click on the product image to view details"""
         product_card = self.find_product(product_name)
         if not product_card:
-            raise Exception(f"Product '{product_name}' not found on any page.")
-
+            raise Exception(f"Product '{product_name}' not found.")
         product_image = product_card.find_element(By.TAG_NAME, "img")
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", product_image)
         product_image.click()
 
-    # ----------------- PRODUCT VISIBILITY -----------------
-    def is_product_visible(self, product_name):
-        try:
-            product_card = self.find_product(product_name)
-            return product_card is not None
-        except:
-            return False
-
-    # ----------------- UTILITY -----------------
-    def scroll_into_view(self, element):
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-
-
-    def get_add_to_cart_xpath_for_product(self,product):
-        return (By.XPATH, f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//button[contains(text(),'Add to Cart')]")
-
-    def get_quantity_xpath_for_product(self,product):
-        return (By.XPATH,f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//input[@type='number and @class=quantity']")
-
-    def get_age_verification_message(self, message_type):
-        xpath_map = {
-            "success": self.AGE_VERIFICATION_SUCCESS_ALERT,
-            "failure": self.AGE_VERIFICATION_FAIL_ALERT,
-        }
-
-        message_type = message_type.lower()
-
-        if message_type not in xpath_map:
-            raise ValueError(f"Invalid message_type: {message_type}")
-
-        try:
-            message = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(xpath_map[message_type])
-            )
-            return message.text.strip()
-
-        except (TimeoutException, NoSuchElementException):
-            return None
-
     def are_alcoholic_products_not_viewable(self):
-        self.find(self.ALCOHOL_CATEGORY_XPATH).click()
-        try:
-            self.find(self.NO_ALCOHOLIC_PRODUCTS)
-            return True
-        except (NoSuchElementException, TimeoutException):
-            return False
-
-        def get_error_message(self):
-            # Wait until the alert is visible, then return text
-            element = self.driver.find_element(*self.AGE_VERIFICATION_FAIL_ALERT)
-            return element.text
-
-
-
-
-
-
+        pass

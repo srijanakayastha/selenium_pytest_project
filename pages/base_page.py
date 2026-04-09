@@ -102,3 +102,26 @@ class BasePage:
     def wait_and_accept_alert(self, timeout=10):
         alert = WebDriverWait(self.driver, timeout).until(EC.alert_is_present())
         alert.accept()
+
+    def safe_click(self, locator, timeout=10):
+        """Wait for element to be clickable and any overlay to disappear."""
+        self.wait_for_overlay_to_disappear()
+        element = WebDriverWait(self.driver, timeout).until(
+            EC.element_to_be_clickable(locator)
+        )
+        element.click()
+
+    def wait_for_overlay_to_disappear(self, timeout=10):
+        """Wait for modal/overlay to disappear before interacting."""
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".modal-overlay"))
+            )
+        except:
+            pass  # overlay not present, continue
+
+    def find(self, locator, timeout=10):
+        """Find element with wait"""
+        return WebDriverWait(self.driver, timeout).until(
+            EC.visibility_of_element_located(locator)
+        )

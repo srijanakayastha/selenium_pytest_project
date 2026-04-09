@@ -21,7 +21,7 @@ def test_rate_product(driver, product):
     login_page = LoginPage(driver)
     login_page.load()
     login_page.login(TEST_VALID_USER_1["email"], TEST_VALID_USER_1["password"])
-    login_page.screenshot(f"after_login_{product_name}")
+
 
     # --- SHOP PAGE & AGE MODAL ---
     shop_page = ShopPage(driver)
@@ -31,19 +31,11 @@ def test_rate_product(driver, product):
 
     # --- ADD TO CART ---
     shop_page.add_product_to_cart(product_name, quantity=quantity)
-    shop_page.screenshot(f"after_add_to_cart_{product_name}")
+
+    # Wait to observe result (optional for debugging)
     time.sleep(5)
 
 
 
-    # # --- ASSERTIONS ---
-    # assert shop_page.get_rating_restriction_text() == Config.ALREADY_REVIEWED_MESSAGE, \
-    #     f"Rating restriction message mismatch for {product_name}"
-    # assert shop_page.get_rating_user() == TEST_VALID_USER_1["username"], \
-    #     f"Rating user mismatch for {product_name}"
-    # assert shop_page.get_rating() == Config.RATING["4"], \
-    #     f"Rating stars count mismatch for {product_name}"
-    #
-    # # --- CLEANUP ---
-    # shop_page.delete_rating()
-    # shop_page.screenshot(f"after_delete_rating_{product_name}")
+
+
