@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Selenium Test Automation Framework (Python + PyTest)
 
 An automated testing framework built using **Python**, **Selenium WebDriver**, and **PyTest** to validate different workflows of an e-commerce web application.
