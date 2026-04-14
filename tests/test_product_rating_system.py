@@ -29,9 +29,9 @@ def rate_product_flow(shop_page, product_name, rating, comment, username):
     """Rate and comment on a product, handling existing ratings"""
     shop_page.rate_product(product_name, rating, comment)
 
-def update_rating(shop_page, product, rating, comment, username):
+def update_rating(shop_page, product_name, rating, comment, username):
         """Rate and comment on a product, handling existing ratings"""
-        shop_page.rate_product(product, rating, comment)
+        shop_page.update_rating(product_name, rating, comment)
 
 
 # ---------- Tests ----------

@@ -67,7 +67,7 @@ class ShopPage(BasePage):
 
     # --- AGE CONFIRM HELPER ---
    
-    def confirm_age(shop_page, date_of_birth):
+    def confirm_age(self, date_of_birth):
         """Helper to enter DOB and confirm age modal"""
         shop_page.enter_date_age_modal(date_of_birth).confirm_age_modal()
 
@@ -180,19 +180,18 @@ class ShopPage(BasePage):
 
         self.view_product_info(product_name)
         if self.has_existing_rating():
-            self.delete_rating
+            self.delete_rating()
         self.rate_stars(rating)
         if comment.strip() != "":
             self.add_comment(comment)
             self.save_rating()
 
-    def update_rating(self, product, rating, comment):
+    def update_rating(self, product_name, rating, comment):
         """Rate and comment on a product, handling existing ratings"""
-        self.view_product_info(product)
+        self.view_product_info(product_name)
         if self.has_existing_rating():
-           self.edit_existing_rating(rating, comment)
-        else:
-         self.rate_stars(rating)
+           self.update_rating()
+        self.rate_stars(rating)
         if comment.strip() != "":
             self.add_comment(comment)
             self.save_rating()
