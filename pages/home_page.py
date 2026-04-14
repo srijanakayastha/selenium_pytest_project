@@ -39,6 +39,7 @@ class HomePage(BasePage):
     def open_shop_by_page(self):
         self.click(self.SHOP_PAGE)
 
+
     def open_contact_page(self):
         self.click(self.CONTACT_PAGE)
 

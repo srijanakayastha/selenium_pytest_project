@@ -1,7 +1,10 @@
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 from utils.config import Config
+from pages import product_rating
 import time
+from selenium.common.exceptions import TimeoutException,NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
 
 class ShopPage(BasePage):
 
@@ -39,15 +42,12 @@ class ShopPage(BasePage):
     def enter_date_age_modal(self, date_of_birth):
         """Enter DOB in age modal fields"""
         day, month, year = date_of_birth.split("-")
-        self.type_text((By.ID, "dob-day"), day)
-        self.type_text((By.ID, "dob-month"), month)
-        self.type_text((By.ID, "dob-year"), year)
+        self.type_text(self.AGE_VERIFICATION_INPUT, f"{day}--{month}--{year}")
         return self
 
     def confirm_age_modal(self):
         """Click confirm on age modal and wait for overlay to disappear"""
         self.safe_click(self.AGE_VERIFICATION_CONFIRM_BUTTON)
-        self.wait_for_overlay_to_disappear()
         return self
 
     def get_age_verification_message(self, message_type):
@@ -100,20 +100,22 @@ class ShopPage(BasePage):
         return (By.XPATH, f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//button[contains(text(),'Add to Cart')]")
 
     def get_quantity_xpath_for_product(self, product):
-        return (By.XPATH, f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//input[@type='number']")
+        return (By.XPATH, f"//div[@class='card']//img[@alt='{product}']/parent::div[@class='card']//input[@type='number' and @class='quantity']")
 
     def add_product_to_cart(self, product_name, quantity=1):
-        self.wait_for_overlay_to_disappear()
-        add_btn_locator = self.get_add_to_cart_xpath_for_product(product_name)
+        wait = WebDriverWait(self.driver, 10)
+        product_add_to_cart_xpath = self.get_add_to_cart_xpath_for_product(product_name)
+        add_to_cart_btn = self.find(product_add_to_cart_xpath)
+
 
         # Set quantity if more than 1
         if int(quantity) > 1:
-            quantity_locator = self.get_quantity_xpath_for_product(product_name)
-            quantity_input = self.find(quantity_locator)
+            product_quantity_xpath = self.get_quantity_xpath_for_product(product_name)
+            quantity_input = self.find(product_quantity_xpath)
             quantity_input.clear()
             quantity_input.send_keys(str(quantity))
 
-        self.safe_click(add_btn_locator)
+        add_to_cart_btn.click()
 
     def view_product_info(self, product_name):
         product_card = self.find_product(product_name)
@@ -136,3 +138,66 @@ class ShopPage(BasePage):
         except:
             # If element is not found, products are visible
             return False
+
+    def has_existing_rating(self):
+        try:
+            menu = self.find(product_rating.COMMENT_OPTIONS)
+            if menu.is_displayed():
+                return True
+            return False
+        except(TimeoutException, NoSuchElementException):
+            print("Menu icon not found due to error")
+
+    def delete_rating(self):
+        try:
+            menu = self.find(product_rating.COMMENT_OPTIONS)
+            if menu.is_displayed():
+                menu.click()
+                self.find(product_rating.DELETE_COMMENT).click()
+                alert = self.wait.until(EC.alert_is_present())
+                alert.accept()
+        except Exception as e:
+            print(f"Delete rating failed: {e}")
+
+    def rate_stars(self, rating):
+        stars_rating = str(rating)
+        if stars_rating not in product_rating.RATING_STARS:
+            raise ValueError(f"Invalid rating: {stars_rating}")
+
+        star_locator = product_rating.RATING_STARS[stars_rating]
+        star = self.find(star_locator)
+        star.click()
+
+    def add_comment(self,comment):
+        self.type_text(product_rating.COMMENT_INPUT, comment)
+
+    def save_rating(self):
+       self.click(product_rating.SEND_RATING_BUTTON)
+
+
+    def rate_product(self, product_name, rating, comment):
+        """Rate and comment on a product, handling existing ratings"""
+
+        self.view_product_info(product_name)
+        if self.has_existing_rating():
+            self.delete_rating
+        self.rate_stars(rating)
+        if comment.strip() != "":
+            self.add_comment(comment)
+            self.save_rating()
+
+    def update_rating(self, product, rating, comment):
+        """Rate and comment on a product, handling existing ratings"""
+        self.view_product_info(product)
+        if self.has_existing_rating():
+           self.edit_existing_rating(rating, comment)
+        else:
+         self.rate_stars(rating)
+        if comment.strip() != "":
+            self.add_comment(comment)
+            self.save_rating()
+
+
+
+
+
