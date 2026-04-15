@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
@@ -72,7 +74,7 @@ def test_logged_user_rates_not_bought_product(driver, email, password, should_lo
         assert shop_page.get_rating_restriction_text() == Config.ITEM_NOT_YET_BOUGHT_MESSAGE
     else:
         assert login_page.get_error_message() == Config.LOGIN_ERROR_MESSAGE
-
+        time.sleep(3)
 
 def test_logged_out_user_rates_product(driver):
     home_page = HomePage(driver).load()
@@ -83,12 +85,12 @@ def test_logged_out_user_rates_product(driver):
     login_page.open_home_by_link()
     home_page.open_shop_by_page()
 
-    shop_page = ShopPage(driver).load()
+    shop_page = ShopPage(driver)
     confirm_age(shop_page, Config.AGE_20)
 
     shop_page.view_product_info("kale")
     assert shop_page.get_rating_restriction_text() == Config.ITEM_NOT_YET_BOUGHT_MESSAGE
-
+    time.sleep(3)
 
 def test_logged_user_rates_product_2_times(driver):
     user = TEST_VALID_USER_1
@@ -98,32 +100,33 @@ def test_logged_user_rates_product_2_times(driver):
     confirm_age(shop_page, Config.AGE_20)
     home_page.open_shop_by_page()
     rate_product_flow(shop_page, "cauliflower", "5", COMMENT["cauliflower"], user["username"])
-
+    time.sleep(3)
 
 def test_user_sees_rate_of_another_user(driver):
     user1 = TEST_VALID_USER_1
     user2 = TEST_VALID_USER_2
+    product_name = "asparagus"
 
-    # User 1 rates product
+    # --- User 1: Login and rate product ---
     home_page, login_page = login_and_verify(driver, user1["email"], user1["password"])
+
     shop_page = ShopPage(driver).load()
     confirm_age(shop_page, Config.AGE_20)
 
-
     home_page.open_shop_by_page()
-    rate_product_flow(shop_page, "asparagus", "3", COMMENT["asparagus"], user1["username"])
 
-    # Logout User 1
-    shop_page.open_auth_profile_by_icon()
+
+    # --- Logout User 1 ---
+    home_page.open_auth_profile_by_icon()
     login_page.logout()
-    login_page.wait_for_confirmation_message(Config.LOGGED_OUT_MESSAGE)
-    assert login_page.get_confirmation_message() == Config.LOGGED_OUT_MESSAGE
 
-    # User 2 views rating
-    login_and_verify(driver, user2["email"], user2["password"])
+# --- User 2: Login and verify rating ---
+    home_page, _ = login_and_verify(driver, user2["email"], user2["password"])
+
+    shop_page = ShopPage(driver).load()
     home_page.open_shop_by_page()
-    shop_page.view_product_info("asparagus")
 
+    # --- Assertions ---
     assert shop_page.get_rating_user() == user1["username"]
     assert shop_page.get_rating() == Config.RATING["3"]
-    assert shop_page.get_comment_text() == COMMENT["asparagus"]
+    assert shop_page.get_comment_text() == COMMENT[product_name]

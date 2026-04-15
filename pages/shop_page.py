@@ -5,6 +5,8 @@ from pages import product_rating
 import time
 from selenium.common.exceptions import TimeoutException,NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 class ShopPage(BasePage):
 
@@ -138,6 +140,32 @@ class ShopPage(BasePage):
         except:
             # If element is not found, products are visible
             return False
+
+    def get_rating_restriction_text(self):
+        """
+        Retrieves the restriction message text."""
+        element = self.find(product_rating.RATING_RESTRICTION)
+        return element.text
+
+    def get_rating_user(self):
+        element = self.find(product_rating.RATING_USER)
+        return element.text
+
+    def get_rating(self):
+        stars = self.find_all(product_rating.CUSTOM_RATING)
+        return len(stars)
+
+    def get_comment_text(self):
+        element = self.driver.find_element(
+            *product_rating.COMMENT_TEXT
+        )
+        return element.text.strip()
+
+
+        # try:
+        #     return self.get_text(product_rating.COMMENT_TEXT)
+        # except TimeoutException:
+        #     print("Comment not found!")
 
     def has_existing_rating(self):
         try:
