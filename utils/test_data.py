@@ -1,13 +1,13 @@
 TEST_VALID_USER_1 = {
     "email": "test123@test.com",
     "password": "123456",
-    "username": "test123"
+    "username": "abhamadi"
 }
 
 TEST_VALID_USER_2 = {
     "email": "test321@test.com",
     "password": "654321",
-    "username": "test321"
+    "username": "Test321"
 }
 
 TEST_INVALID_USER = {

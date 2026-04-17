@@ -2,7 +2,7 @@ import os
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+
 
 
 @pytest.fixture(scope="function")
@@ -28,8 +28,8 @@ def driver():
     driver = None
 
     try:
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+
+        driver = webdriver.Chrome( options=chrome_options)
 
         # Basic stability improvement
         driver.implicitly_wait(5)

@@ -44,7 +44,7 @@ class ShopPage(BasePage):
     def enter_date_age_modal(self, date_of_birth):
         """Enter DOB in age modal fields"""
         day, month, year = date_of_birth.split("-")
-        self.type_text(self.AGE_VERIFICATION_INPUT, f"{day}--{month}--{year}")
+        self.type_text(self.AGE_VERIFICATION_INPUT, f"{day}-{month}-{year}")
         return self
 
     def confirm_age_modal(self):
@@ -94,6 +94,15 @@ class ShopPage(BasePage):
                     return None
             except:
                 return None
+
+    def add_product(self, product, quantity=1):
+        product = self.find_product(product)
+        add_to_cart_button = product.find_element(By.CSS_SELECTOR, ".btn-cart")
+        quantity_input = product.find_element(By.CSS_SELECTOR, ".quantity")
+        if int(quantity) > 1:
+            quantity_input.clear
+            quantity_input.send_keys(quantity)
+        add_to_cart_button.click()
 
     def is_product_visible(self, product_name):
         return self.find_product(product_name) is not None

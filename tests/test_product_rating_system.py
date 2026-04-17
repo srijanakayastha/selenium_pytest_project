@@ -4,28 +4,18 @@ import pytest
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.shop_page import ShopPage
+from utils.helpers import login_and_verify, confirm_age
 from utils.test_data import (
     TEST_VALID_USER_1, TEST_VALID_USER_2,
     TEST_INVALID_USER, ADDRESS, CARD, COMMENT
 )
 from utils.config import Config
 
-# ---------- Helpers ----------
-
-def login_and_verify(driver, email, password):
-    """Log in and assert logout button visible"""
-    login_page = LoginPage(driver).load()
-    home_page = HomePage(driver)
-    login_page.login(email, password)
-    home_page.open_auth_profile_by_icon()
-    assert login_page.is_visible_logout_button()
-    driver.back()
-    return home_page, login_page
 
 
-def confirm_age(shop_page, date_of_birth):
-    """Enter date of birth and confirm age modal"""
-    shop_page.enter_date_age_modal(date_of_birth).confirm_age_modal()
+
+
+
 
 def rate_product_flow(shop_page, product_name, rating, comment, username):
     """Rate and comment on a product, handling existing ratings"""
@@ -42,6 +32,8 @@ def update_rating(shop_page, product_name, rating, comment, username):
     "user, product_name, rating, comment",
     [
         (TEST_VALID_USER_1, "celery", "1", "celery"),
+        (TEST_VALID_USER_1, "cauliflower", "5", "cauliflower"),
+        (TEST_VALID_USER_1, "asparagus", "3", "asparagus"),
 
     ]
 )

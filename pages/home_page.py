@@ -1,6 +1,7 @@
 
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
+from pages.checkout_page import CheckoutPage
 from utils.config import Config
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -35,6 +36,7 @@ class HomePage(BasePage):
 
     def open_cart_by_icon(self):
         self.click(self.CART_ICON)
+        return CheckoutPage(self.driver)
 
     def open_shop_by_page(self):
         self.click(self.SHOP_PAGE)
