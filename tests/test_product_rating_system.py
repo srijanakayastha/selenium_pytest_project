@@ -1,5 +1,4 @@
 import time
-
 import pytest
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
@@ -7,15 +6,9 @@ from pages.shop_page import ShopPage
 from utils.helpers import login_and_verify, confirm_age
 from utils.test_data import (
     TEST_VALID_USER_1, TEST_VALID_USER_2,
-    TEST_INVALID_USER, ADDRESS, CARD, COMMENT
+    TEST_INVALID_USER, COMMENT
 )
 from utils.config import Config
-
-
-
-
-
-
 
 def rate_product_flow(shop_page, product_name, rating, comment, username):
     """Rate and comment on a product, handling existing ratings"""

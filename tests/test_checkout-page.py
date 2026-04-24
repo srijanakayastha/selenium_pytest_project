@@ -84,6 +84,13 @@ def test_shipping_cost_calculation_dynamic(driver, user, dob, extra_mushrooms, i
 # Test Case: Verify that free shipping cost is not kept after the Product Total drops below 20€.
 # As a user of MarketMate, I can see the shipping cost is being added back when Product Total drops below 20€.
 
+@pytest.mark.xfail(
+    condition = True,
+    raises =AssertionError,
+    strict = True,
+    reason ='Bug: shipping cost not re-applied after dropping below the price'
+)
+
 def test_shipping_reapplied_below_threshold(driver):
     home_page, _ = login_and_verify(driver, TEST_VALID_USER_1["email"], TEST_VALID_USER_1["password"])
 

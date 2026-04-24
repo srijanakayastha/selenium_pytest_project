@@ -1,15 +1,14 @@
 import pytest
 from pages.login_page import LoginPage
 from pages.shop_page import ShopPage
-from utils.config import Config
 import time
-from utils.test_data import COMMENT, TEST_VALID_USER_1
+from utils.test_data import TEST_VALID_USER_1
 
 # Products to test (must match alt attributes exactly)
 PRODUCTS_TO_TEST = [
-    {"name": "Celery", "quantity": 5}
-     # {"name": "Loose Pears", "quantity": 3},
-     # {"name": "Cherries", "quantity": 2},
+    {"name": "Celery", "quantity": 5},
+      {"name": "Loose Pears", "quantity": 3},
+      {"name": "Cherries", "quantity": 2},
 ]
 
 @pytest.mark.parametrize("product", PRODUCTS_TO_TEST, ids=[p["name"] for p in PRODUCTS_TO_TEST])

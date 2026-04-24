@@ -1,7 +1,5 @@
 import time
-
 from pages.registration_page import RegistrationPage
-
 
 def test_creating_new_user(driver):
     registration = RegistrationPage(driver)

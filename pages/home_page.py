@@ -20,6 +20,8 @@ class HomePage(BasePage):
 
     def __init__(self, driver):
         super().__init__(driver)
+        self.FAVORITES_PAGE = None
+        self.CONTACT_PAGE = None
 
     # -- ACTIONS --
     def load(self):

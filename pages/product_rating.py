@@ -1,7 +1,4 @@
 from selenium.webdriver.common.by import By
-
-
-
 # --- RATING SYSTEM ---
 COMMENT_INPUT = (By.XPATH, "//textarea[@class = 'new-review-form-control ']")
 SEND_RATING_BUTTON = (By.XPATH, "//button[@class = 'new-review-btn new-review-btn-send']")

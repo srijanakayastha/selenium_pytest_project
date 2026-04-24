@@ -1,9 +1,6 @@
 import os
 import pytest
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-
-
 
 @pytest.fixture(scope="function")
 def driver():
@@ -13,9 +10,6 @@ def driver():
 
     # Avoid Google Password Manager pop-up
     chrome_options.add_argument("--guest")
-
-    # # Zoom out to ensure all UI elements are visible
-    # chrome_options.add_argument("--force-device-scale-factor=0.8")
 
     # Start browser maximized
     chrome_options.add_argument("--start-maximized")

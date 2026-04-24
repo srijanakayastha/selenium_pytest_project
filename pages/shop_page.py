@@ -170,12 +170,6 @@ class ShopPage(BasePage):
         )
         return element.text.strip()
 
-
-        # try:
-        #     return self.get_text(product_rating.COMMENT_TEXT)
-        # except TimeoutException:
-        #     print("Comment not found!")
-
     def has_existing_rating(self):
         try:
             menu = self.find(product_rating.COMMENT_OPTIONS)

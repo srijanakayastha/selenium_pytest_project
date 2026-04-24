@@ -1,10 +1,7 @@
 import time
-
-import self
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 from utils.config import Config
-# Wait until all remove icons are gone from the page
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
